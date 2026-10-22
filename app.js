@@ -117,7 +117,7 @@
     },
     {
       id: 'curriculum', title: '교육과정 분석', req: ['curriculum.area', 'curriculum.idea', 'curriculum.knowledge', 'curriculum.skill', 'curriculum.value', 'curriculum.standard'],
-      lead: '성취기준과 내용 체계(영역·핵심 아이디어·내용 요소)를 목록에서 골라 채웁니다. 목록은 2026 세종 생각자람교육과정(학습2)에서 가져왔습니다.',
+      lead: '성취기준과 내용 체계(영역·핵심 아이디어·내용 요소)를 목록에서 골라 채웁니다. 목록은 「[학습2] 세종창의적교육과정 초등학교 생각자람교육과정(성취기준).pdf」에서 가져왔습니다.',
       fields: [
         { type: 'stdPicker' },
         { p: 'curriculum.standard', label: '관련 성취기준', type: 'textarea', rows: 3, ph: '위 목록에서 체크하면 자동으로 들어갑니다. 직접 입력도 됩니다.', hint: '성취기준 코드를 [ ] 안에 함께 적습니다.' },
