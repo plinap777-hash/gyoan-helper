@@ -6,7 +6,9 @@
   const STORAGE_KEY = 'gyoan-helper-v1';
   const AI_TOOLS = ['웹페이지', '에듀테크', '스마트패드', '피지컬컴퓨터', '기타'];
   const AI_ACT_TITLES = ['질문생성하기', '질문에 대한 답을 찾는 방법 탐색하기', '문제해결 및 성찰하기'];
-  const DEFAULT_REF = '질문중심 수업설계(2025). 『질문중심수업 일반화 모형』. 교육부.\n질문중심 수업모델(2025). 『질문중심 수업모델』. 교육부.';
+  const OLD_REF = '질문중심 수업설계(2025). 『질문중심수업 일반화 모형』. 교육부.\n질문중심 수업모델(2025). 『질문중심 수업모델』. 교육부.';
+  const CURR_REF = '세종특별자치시교육청(2025). 「[학습2] 세종창의적교육과정 초등학교 생각자람교육과정(성취기준).pdf」. 고시 제2025-9호.';
+  const DEFAULT_REF = OLD_REF + '\n' + CURR_REF;
   const CFG = window.APP_CONFIG || {};
   const SUBMIT = { url: /^https:\/\//.test(String(CFG.SUBMIT_URL || '').trim()) ? String(CFG.SUBMIT_URL).trim() : '', label: CFG.SUBMIT_LABEL || '최종 지도안 제출하기', notice: String(CFG.SUBMIT_NOTICE || '').trim() };
   const STD = window.STD_DATA || { subjects: {}, groups: {}, items: [] };
@@ -60,7 +62,9 @@
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
-      return merge(emptyState(), JSON.parse(raw));
+      const st = merge(emptyState(), JSON.parse(raw));
+      if (st.ai && st.ai.refEtc === OLD_REF) st.ai.refEtc = DEFAULT_REF;
+      return st;
     } catch (e) { return null; }
   }
   function merge(base, src) {
