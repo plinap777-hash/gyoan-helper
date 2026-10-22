@@ -527,6 +527,38 @@
     renderSide();
   }
 
+
+  /* 한 번에 초안: 수업 흐름~평가 단계의 입력 항목을 한 번에 요청하는 프롬프트 */
+  function allInOnePrompt() {
+    const o = state.overview, c = state.curriculum;
+    const SKIP = ['practice.unit', 'practice.session', 'practice.source', 'practice.inquiryQ'];
+    const ids = ['flow', 'design', 'practice', 'evalu'];
+    let n = 0;
+    const flat = (fs) => fs.reduce((a, f) => a.concat(f.row ? f.row : [f]), []);
+    const sec = STEPS.filter((x) => ids.includes(x.id)).map((x) => {
+      const items = flat(x.fields).filter((f) => f.label || f.type === 'lessons' || f.type === 'activities').filter((f) => !SKIP.includes(f.p)).map((f) => {
+        n++;
+        if (f.type === 'lessons') return n + ') 차시별 수업 흐름: 표(차시 / 내용), 공개수업 차시와 탐구 자료 투입 차시를 표시';
+        if (f.type === 'activities') return n + ') 전개 활동: 2~3개. [활동N] 제목 / 학생 활동 2~3개 항목' + (state.type === 'read' ? ' (한 활동에는 [독서전략] 이름과 한 줄 설명, 다른 한 활동에는 “교과 탐구 독서의 포인트” 안내 포함)' : state.type === 'ai' ? ' (순서: [활동1] 질문생성하기 / [활동2] 답을 찾는 방법 탐색하기 / [활동3] 문제해결 및 성찰하기, 각 “~하기” 항목)' : ' (순서: [활동1] 질문 생성하기 / [활동2] 탐구하기 / [활동3] 내 말로 학습 종합하기, 각 “~하기” 항목)');
+        return n + ') ' + f.label + (f.hint ? ' — ' + f.hint : '');
+      });
+      return '■ ' + x.title + '\n' + items.join('\n');
+    }).join('\n\n');
+    const info = [
+      '- 교과/학년-학기: ' + ([o.subject, o.grade].filter(Boolean).join(' ') || '(미선택)') + (o.unit ? ' / 단원: ' + o.unit : ''),
+      '- 수업 주제: ' + (o.topic || '(미정 — 후보 제안 포함)'),
+      '- 운영 차시: ' + (o.sessions || '(미정)'),
+      '- 자료 형태: ' + (o.materials.join(', ') || '(미정)') + (state.type === 'ai' ? ' / 인공지능 도구: ' + (o.aiTools.join(', ') || '(미정)') : ''),
+      '- 영역: ' + (c.area || '(미선택)'),
+      '- 핵심 아이디어: ' + (c.idea || '(미선택)'),
+      '- 내용 요소: 지식·이해(' + (c.knowledge || '-') + ') / 과정·기능(' + (c.skill || '-') + ') / 가치·태도(' + (c.value || '-') + ')',
+      '- 성취기준: ' + (c.standard || '(미선택)'),
+    ].join('\n');
+    return promptHead() + '아래 수업 정보를 바탕으로, 수업 흐름부터 학생 평가까지 지도안 초안을 한 번에 작성해 주세요.\n\n[수업 정보]\n' + info +
+      '\n\n[작성 항목] 번호와 항목명을 그대로 소제목으로 쓰고, 항목마다 내용을 구분해 주세요. 그대로 복사해 양식 칸에 붙여 넣을 수 있어야 합니다.\n\n' + sec +
+      '\n\n[일관성 조건]\n- 본질 질문 → 탐구 질문 → 학습 목표 → 활동 → 평가 요소가 서로 이어져야 함\n- 본질 질문은 성취기준·핵심 아이디어에서 추출, 탐구 질문은 본질 질문보다 구체적이고 자료로 답을 찾을 수 있어야 함\n- 성취 수준은 같은 기준에서 정확성·깊이·독립성으로 구분(매우 잘함/잘함/기초)\n- 초등학생 발달 수준에 맞고, 실제 존재하는 자료·사실만 사용하며 확실하지 않으면 “확인 필요”로 표시' + PROMPT_TAIL;
+  }
+
   function renderSide() {
     if (current === STEPS.length) {
       const total = STEPS.reduce((n, s) => n + s.req.length, 0);
@@ -543,6 +575,7 @@
       <div class="card"><h3>자동 점검</h3><ul class="checklist" id="checklist">${checkHtml(checks)}</ul></div>
       <div class="card no-print"><h3>AI 프롬프트 생성기</h3><div class="tip">지금까지 입력한 내용으로 ChatGPT·Claude·Gemini 등에 붙여 넣을 프롬프트를 만듭니다. ${current === STEPS.length - 1 ? '(마지막 단계에서는 지도안 전체 점검 요청이 만들어집니다.)' : ''}</div>
         <div style="display:flex;gap:6px;margin-top:8px"><button class="btn small" data-act="mkPrompt">프롬프트 만들기</button><button class="btn ghost small" data-act="cpPrompt">복사</button></div>
+        <div style="margin-top:6px"><button class="btn ghost small" data-act="mkAll" title="수업 흐름·탐구 설계·수업의 실제·평가 항목을 한 번에 요청합니다">한 번에 초안 만들기 (수업 흐름~평가)</button></div>
         <div class="prompt-box"><textarea id="promptOut" readonly placeholder="[프롬프트 만들기]를 누르세요."></textarea></div>
         <div class="tip" style="margin-top:6px">AI가 만든 초안은 사실과 교육과정 원문을 반드시 확인한 뒤 선생님의 수업에 맞게 고쳐 쓰세요.</div></div>`;
   }
@@ -793,6 +826,7 @@
         save(); renderForm(); return toast('앞 단계 내용을 가져왔습니다.');
       }
       case 'mkPrompt': { const st = STEPS[current]; $('#promptOut').value = promptHead() + st.prompt(state) + PROMPT_TAIL; return; }
+      case 'mkAll': { $('#promptOut').value = allInOnePrompt(); return toast('수업 흐름~평가를 한 번에 요청하는 프롬프트를 만들었습니다. 1·2단계(개요·교육과정)를 먼저 채우면 더 정확합니다.'); }
       case 'cpPrompt': { const t = $('#promptOut').value; if (!t) return toast('먼저 [프롬프트 만들기]를 눌러 주세요.'); await copy(t); return toast('프롬프트를 복사했습니다.'); }
       case 'docx': { const blob = await buildDocx(); if (blob) { download(blob, fileBase() + '.docx'); toast('Word 파일을 내려받았습니다.'); } return; }
       case 'print': { if (!viewBlank && current !== STEPS.length) go(STEPS.length); setTimeout(() => window.print(), 150); return; }
