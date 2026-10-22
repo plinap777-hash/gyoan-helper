@@ -497,7 +497,7 @@
         <button class="btn ghost" data-act="print">인쇄 / PDF 저장</button>
         <button class="btn ghost" data-act="copyText">전체 텍스트 복사</button>
       </div>${SUBMIT.url || SUBMIT.notice ? `<div class="submit-box">${SUBMIT.notice ? `<b>📢 ${esc(SUBMIT.notice)}</b>` : ''}
-        <div class="hint" style="margin-top:4px">Word(.docx)로 내려받은 뒤 한글파일에서 열어주세요. 제출시에는 “학년반_이름_지도안”처럼 바꾸어 제출하면 정리하기 좋습니다.</div>
+        <div class="hint" style="margin-top:4px">Word(.docx)로 내려받은 뒤 한글파일에서 열어주세요. 제출시에는 “동료장학지도안_학년반_이름”처럼 바꾸어 제출하면 정리하기 좋습니다.</div>
         ${SUBMIT.url ? `<div style="margin-top:8px"><a class="btn submit" href="${esc(SUBMIT.url)}" target="_blank" rel="noopener">${esc(SUBMIT.label)} ↗</a></div>` : ''}</div>` : ''}</div>`;
   }
 
