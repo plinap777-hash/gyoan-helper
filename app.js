@@ -117,7 +117,6 @@
         [/\d/.test(s.overview.sessions), '운영 차시에 숫자가 들어 있나요? (예: 8~9/10)'],
         [s.overview.materials.length > 0, '자료 형태를 하나 이상 선택했나요?'],
       ],
-      prompt: (s) => `아래 단원에서 학생의 호기심을 끄는 수업 주제(프로그램명) 후보 5개를 제안해 주세요. 교과 개념과 실생활 맥락이 함께 드러나야 하고, 한 문장이며 20자 안팎이어야 합니다.\n- 교과/학년-학기: ${s.overview.subject} ${s.overview.grade}\n- 단원: ${s.overview.unit}\n- 자료 형태: ${s.overview.materials.join(', ') || '(미정)'}`,
     },
     {
       id: 'curriculum', title: '교육과정 분석', req: ['curriculum.area', 'curriculum.idea', 'curriculum.knowledge', 'curriculum.skill', 'curriculum.value', 'curriculum.standard'],
@@ -139,7 +138,6 @@
         [filled(s.curriculum.knowledge) && filled(s.curriculum.skill) && filled(s.curriculum.value), '내용 요소 3가지(지식·이해/과정·기능/가치·태도)를 모두 채웠나요?'],
         [/\[\d[가-힣]+\d{2}-\d{2}\]/.test(s.curriculum.standard), '성취기준에 코드([6수02-05] 형식)가 있나요?'],
       ],
-      prompt: (s) => `다음 단원의 2022 개정 교육과정 정보(영역, 핵심 아이디어, 내용 체계의 지식·이해/과정·기능/가치·태도, 관련 성취기준)를 찾아 정리해 주세요. 반드시 교육과정 원문 그대로 인용하고, 확실하지 않은 부분은 “확인 필요”라고 표시해 주세요.\n- 교과/학년-학기: ${s.overview.subject} ${s.overview.grade}\n- 단원: ${s.overview.unit}`,
     },
     {
       id: 'flow', title: '수업 흐름', req: ['flow.understanding', 'flow.essentialQ'],
@@ -157,7 +155,6 @@
         [s.flow.lessons.filter((l) => filled(l.content)).length >= 2, '차시별 흐름을 2개 이상 적었나요?'],
         [s.flow.lessons.some((l) => l.inquiry), '탐구 자료가 투입되는 차시를 표시했나요?'],
       ],
-      prompt: (s) => `다음 교육과정 정보를 바탕으로 ‘본질적 이해’ 1문장과 ‘본질 질문’ 후보 3개를 제안하고, 단원 차시별 수업 흐름(차시, 내용, 탐구 자료 투입 차시 표시) 초안을 표로 만들어 주세요.\n- 교과/단원: ${s.overview.subject} ${s.overview.grade} ${s.overview.unit} (전체 차시 ${s.overview.sessions})\n- 영역: ${s.curriculum.area}\n- 핵심 아이디어: ${s.curriculum.idea}\n- 내용 요소: 지식·이해(${s.curriculum.knowledge}) / 과정·기능(${s.curriculum.skill}) / 가치·태도(${s.curriculum.value})\n- 성취기준: ${s.curriculum.standard}\n\n[조건]\n- 본질적 이해는 서술문, 본질 질문은 “왜·어떻게”가 드러나는 열린 질문\n- 본질 질문은 성취기준·핵심 아이디어에서 추출\n- 탐구 자료(${s.overview.materials.join(', ') || '자료'})를 읽고 탐구하는 차시를 1~2개 지정`,
     },
     {
       id: 'design', title: '탐구 설계', req: ['design.inquiryQ', 'design.why', 'design.sourceName', 'design.reason', 'design.usage', 'design.expected', 'design.before', 'design.after', 'design.newQ'],
@@ -189,7 +186,6 @@
           [lines(s.design.newQ) >= 2, '새로운 질문을 2개 이상 적었나요?'],
         ];
       },
-      prompt: (s) => `다음 수업의 '교과 탐구 독서 설계' 초안을 작성해 주세요.\n\n[수업 정보]\n- ${s.overview.subject} ${s.overview.grade} ${s.overview.unit} / 주제: ${s.overview.topic}\n- 성취기준: ${s.curriculum.standard}\n- 본질적 이해: ${s.flow.understanding}\n- 본질 질문: ${s.flow.essentialQ}\n- 탐구 자료: ${s.design.sourceName || '(자료 미정 — 적합한 자료 유형을 제안해 주세요)'}\n\n[작성 항목]\n1) 탐구 질문 (본질 질문보다 구체적, 자료로 답을 찾을 수 있는 열린 질문 1개)\n2) 왜 탐구 독서여야 하는가 (3~4문장)\n3) 자료 선정 이유 (3문장 이내)\n4) 자료 활용 방법 (5단계, 각 문장은 “~함.”으로 종결)\n5) 예상 탐구 결과 (3~5개)\n6) 성찰: 읽기 전 학생 생각 / 탐구 후 바뀐 학생 생각(서로 대응) / 새로운 질문 2~3개\n\n[주의] 초등학생 발달 수준에 맞게, 실제 존재하는 자료·사실만 사용하고 확실하지 않은 내용은 “확인 필요”로 표시하세요.`,
     },
     {
       id: 'practice', title: '수업의 실제', req: ['practice.unit', 'practice.session', 'practice.goal', 'practice.source', 'practice.intro', 'practice.inquiryQ', 'practice.outro'],
@@ -219,7 +215,6 @@
         [s.practice.activities.some((a) => filled(a.tipTitle)), '“교과 탐구 독서의 포인트”를 넣었나요?'],
         [/\?/.test(s.practice.outro), '정리에 새로운 질문 던지기가 들어 있나요?'],
       ],
-      prompt: (s) => `다음 정보를 바탕으로 공개수업 차시의 교수·학습 과정안(도입-전개-정리)을 작성해 주세요.\n\n- 교과/단원: ${s.overview.subject} ${s.overview.grade} ${s.overview.unit} (${s.practice.session || s.overview.sessions}차시)\n- 성취기준: ${s.curriculum.standard}\n- 본질 질문: ${s.flow.essentialQ}\n- 탐구 질문: ${s.design.inquiryQ}\n- 탐구 자료: ${s.design.sourceName}\n- 자료 활용 방법: ${s.design.usage.replace(/\n/g, ' / ')}\n- 새로운 질문 후보: ${s.design.newQ.replace(/\n/g, ' / ')}\n\n[작성 형식]\n1) 학습 목표 (“~할 수 있다.” 종결, 1문장)\n2) 도입 (2~3개 항목)\n3) 전개: 탐구 질문 + 활동 2~3개. 각 활동은 [활동N] 제목 / 학생 활동 2~3개 항목. 그중 한 활동에는 [독서전략] 이름과 한 줄 설명, 또 한 활동에는 “교과 탐구 독서의 포인트 — ○○자처럼 읽기” 안내 문구(학생에게 던질 질문 2~3개 포함)\n4) 정리 (성찰 학습지, 새로운 질문 던지기, 다음 차시 안내)\n\n초등학생 눈높이로, 실제 수업 시간(40분 기준 ${s.practice.session ? '블록수업 가능' : ''})에 가능한 분량으로 작성해 주세요.`,
     },
     {
       id: 'evalu', title: '학생 평가', req: ['evalu.elements', 'evalu.high', 'evalu.mid', 'evalu.low'],
@@ -238,7 +233,6 @@
         [filled(s.evalu.high) && filled(s.evalu.mid) && filled(s.evalu.low), '3개 수준을 모두 작성했나요?'],
         [s.evalu.high.trim().length > s.evalu.low.trim().length || !filled(s.evalu.high), '“매우 잘함”이 “기초”보다 구체적·심화된 서술인가요?'],
       ],
-      prompt: (s) => `아래 학습 목표와 활동을 바탕으로 학생 평가 계획을 작성해 주세요.\n\n- 학습 목표: ${s.practice.goal}\n- 성취기준: ${s.curriculum.standard}\n- 주요 활동: ${s.practice.activities.map((a) => a.title).filter(Boolean).join(' / ')}\n\n[작성 항목] 평가 요소 2~3개(“~하기” 종결), 평가 방법(관찰·산출물 등), 성취 수준 3단계(매우 잘함/잘함/기초). 3수준은 같은 기준에서 정확성·깊이·독립성으로 구분하고 성취기준과 일관되게 서술해 주세요.`,
     },
     {
       id: 'appendix', title: '붙임·내보내기', req: ['appendix.title', 'appendix.text', 'appendix.origin'],
@@ -255,7 +249,6 @@
         [filled(s.appendix.title) && filled(s.appendix.text), '읽기 자료 제목과 본문을 넣었나요?'],
         [filled(s.appendix.origin), '원자료 출처를 밝혔나요?'],
       ],
-      prompt: (s) => `다음은 제가 작성한 동료장학 수업지도안(교과 탐구 독서)입니다. 아래 지도안 전체를 읽고, ① 본질 질문-탐구 질문-학습 목표-평가 요소의 일관성, ② 탐구 질문의 적절성, ③ 독서 전략과 활동의 연결, ④ 성찰(읽기 전/후 생각·새로운 질문) 완성도를 점검해 개선점을 항목별로 제안해 주세요.\n\n${toPlainText(s)}`,
     },
   ];
 
@@ -295,7 +288,6 @@
             [s.practice.activities.filter((a) => filled(a.title)).length >= 2, '활동을 2개 이상 구성했나요?'],
             [/\?/.test(s.practice.outro), '정리에 새로운 질문 던지기가 들어 있나요?'],
           ];
-          x.prompt = (s) => `다음 정보를 바탕으로 공개수업 차시의 교수·학습 과정안(도입-전개-정리)을 작성해 주세요.\n\n- 교과/단원: ${s.overview.subject} ${s.overview.grade} ${s.overview.unit} (${s.practice.session || s.overview.sessions}차시)\n- 본질 질문: ${s.flow.essentialQ}\n- 탐구 질문: ${s.design.inquiryQ}\n- 자료 활용 방법: ${s.design.usage.replace(/\n/g, ' / ')}\n\n[형식] 학습 목표(“~할 수 있다.”), 도입(질문 생성을 위한 자료 제시), 전개: 탐구 질문 + [활동1] ~하기 / [활동2] ~하기 / [활동3] 내 말로 학습 종합하기(발표 포함), 정리(오늘 발견한 것 정리, 새로운 질문 던지기). 활동마다 “~하기” 항목 2~3개.`;
         }
         if (x.id === 'evalu') { strip(x, (f) => f.filter((q) => q.p !== 'evalu.method')); }
       });
@@ -310,7 +302,6 @@
         ],
         tips: ['도서는 “지은이(연도).『책제목』. 출판사.” 형식으로 적습니다.', '내려받은 .docx는 한글(HWP)에서 열어 양식에 맞게 다듬을 수 있습니다.'],
         examples: [], check: (s) => [[filled(s.ai.refBook) || filled(s.ai.refEtc), '참고자료를 적었나요?']],
-        prompt: (s) => `다음 비교과 질문중심 수업 지도안을 읽고, ① 본질 질문-탐구 질문-학습 목표-평가 요소의 일관성, ② 탐구 질문의 적절성, ③ 활동 흐름(질문 생성-탐구-내 말로 종합), ④ 성찰(수업 전/후 생각·새로운 질문)을 점검해 개선점을 제안해 주세요.\n\n${toPlainText(s)}`,
       });
     }
     if (t === 'ai') {
@@ -340,7 +331,6 @@
           x.req = x.req.filter((r) => r !== 'design.why').concat(['ai.ethics']);
           x.tips = ['<b>AI활용 도구 및 자료</b>에는 도구(웹페이지, 에듀테크, 스마트패드 등)와 자료 제목·출처를 적습니다.', '<b>윤리·안전 검증</b>에는 개인정보 보호, 답변의 사실 확인 방법을 적습니다.', '<b>수업 전 ↔ 수업 후 생각</b>이 짝을 이루도록 쓰면 성찰이 선명해집니다.'];
           const c = x.check; x.check = (s) => c(s).filter((r) => !/탐구 독서여야/.test(r[1])).concat([[filled(s.ai.ethics), '인공지능 윤리·안전 검증을 적었나요?']]);
-          x.prompt = (s) => `다음 수업의 '질문중심 인공지능 활용 수업 설계' 초안을 작성해 주세요.\n\n[수업 정보]\n- ${s.overview.subject} ${s.overview.grade} ${s.overview.unit} / 주제: ${s.overview.topic}\n- 인공지능 도구: ${s.overview.aiTools.join(', ') || '(미정)'}\n- 성취기준: ${s.curriculum.standard}\n- 본질 질문: ${s.flow.essentialQ}\n\n[작성 항목]\n1) 탐구 질문(“~문제를 어떻게 해결할 수 있을까?” 형식 1개)\n2) AI활용 도구 및 자료(제목·출처)와 도구 선정 이유(“~는 ~ 자료임.”)\n3) 자료 활용 방법(3~5개, “~도록 안내함.” 종결)\n4) 인공지능 윤리·안전 검증(개인정보, 답변의 사실 확인)\n5) 예상 탐구 결과 2~3개\n6) 성찰: 수업 전 학생 생각 / 수업 후 바뀐 학생 생각 / 새로운 질문\n\n인공지능이 답을 대신 내리지 않고 학생의 질문·탐구를 돕는 도구로 쓰이게 하고, 실제 존재하는 자료·사실만 사용해 주세요.`;
         }
         if (x.id === 'practice') {
           x.lead = '공개수업 차시의 도입-전개-정리를 구성합니다. 전개는 [활동1] 질문생성하기 → [활동2] 답을 찾는 방법 탐색하기 → [활동3] 문제해결 및 성찰하기 흐름을 기본으로 합니다.';
@@ -354,7 +344,6 @@
             [s.practice.activities.filter((a) => filled(a.title)).length >= 2, '활동을 2개 이상 구성했나요?'],
             [/\?/.test(s.practice.outro), '정리에 새로운 질문 던지기가 들어 있나요?'],
           ];
-          x.prompt = (s) => `다음 정보를 바탕으로 공개수업 차시의 교수·학습 과정안(도입-전개-정리)을 작성해 주세요.\n\n- 교과/단원: ${s.overview.subject} ${s.overview.grade} ${s.overview.unit} (${s.practice.session || s.overview.sessions}차시)\n- 인공지능 도구: ${s.overview.aiTools.join(', ')}\n- 본질 질문: ${s.flow.essentialQ}\n- 탐구 질문: ${s.design.inquiryQ}\n- 활용 방법: ${s.design.usage.replace(/\n/g, ' / ')}\n\n[형식] 학습 목표(“~할 수 있다.”), 도입(1~2개), 전개: 탐구 질문 + [활동1] 질문생성하기 / [활동2] 질문에 대한 답을 찾는 방법 탐색하기(구체적 검색 방법·자료 안내) / [활동3] 문제해결 및 성찰하기(발표 포함), 정리(오늘 발견한 것 정리, 새로운 질문 던지기). 각 활동은 “~하기” 항목 2~3개로 작성해 주세요.`;
         }
         if (x.id === 'evalu') { strip(x, (f) => f.filter((q) => q.p !== 'evalu.method')); }
       });
@@ -370,7 +359,6 @@
         ],
         tips: ['생성형 AI를 사용했다면 서비스명과 어떤 용도로 썼는지 밝힙니다.', '내려받은 .docx는 한글(HWP)에서 열어 양식에 맞게 다듬을 수 있습니다.'],
         examples: [], check: (s) => [[filled(s.ai.refAI), '사용한 생성형 AI를 적었나요? (사용하지 않았다면 “없음”)']],
-        prompt: (s) => `다음 교과탐구 인공지능활용 수업 지도안을 읽고, ① 본질 질문-탐구 질문-학습 목표-평가 요소의 일관성, ② AI 도구 활용의 적절성과 윤리·안전 검증, ③ 활동 흐름(질문생성-답 찾기-문제해결·성찰)을 점검해 개선점을 제안해 주세요.\n\n${toPlainText(s)}`,
       });
     }
     return st;
@@ -532,37 +520,6 @@
   }
 
 
-  /* 한 번에 초안: 수업 흐름~평가 단계의 입력 항목을 한 번에 요청하는 프롬프트 */
-  function allInOnePrompt() {
-    const o = state.overview, c = state.curriculum;
-    const SKIP = ['practice.unit', 'practice.session', 'practice.source', 'practice.inquiryQ'];
-    const ids = ['flow', 'design', 'practice', 'evalu'];
-    let n = 0;
-    const flat = (fs) => fs.reduce((a, f) => a.concat(f.row ? f.row : [f]), []);
-    const sec = STEPS.filter((x) => ids.includes(x.id)).map((x) => {
-      const items = flat(x.fields).filter((f) => f.label || f.type === 'lessons' || f.type === 'activities').filter((f) => !SKIP.includes(f.p)).map((f) => {
-        n++;
-        if (f.type === 'lessons') return n + ') 차시별 수업 흐름: 표(차시 / 내용), 공개수업 차시와 탐구 자료 투입 차시를 표시';
-        if (f.type === 'activities') return n + ') 전개 활동: 2~3개. [활동N] 제목 / 학생 활동 2~3개 항목' + (state.type === 'read' ? ' (한 활동에는 [독서전략] 이름과 한 줄 설명, 다른 한 활동에는 “교과 탐구 독서의 포인트” 안내 포함)' : state.type === 'ai' ? ' (순서: [활동1] 질문생성하기 / [활동2] 답을 찾는 방법 탐색하기 / [활동3] 문제해결 및 성찰하기, 각 “~하기” 항목)' : ' (순서: [활동1] 질문 생성하기 / [활동2] 탐구하기 / [활동3] 내 말로 학습 종합하기, 각 “~하기” 항목)');
-        return n + ') ' + f.label + (f.hint ? ' — ' + f.hint : '');
-      });
-      return '■ ' + x.title + '\n' + items.join('\n');
-    }).join('\n\n');
-    const info = [
-      '- 교과/학년-학기: ' + ([o.subject, o.grade].filter(Boolean).join(' ') || '(미선택)') + (o.unit ? ' / 단원: ' + o.unit : ''),
-      '- 수업 주제: ' + (o.topic || '(미정 — 후보 제안 포함)'),
-      '- 운영 차시: ' + (o.sessions || '(미정)'),
-      '- 자료 형태: ' + (o.materials.join(', ') || '(미정)') + (state.type === 'ai' ? ' / 인공지능 도구: ' + (o.aiTools.join(', ') || '(미정)') : ''),
-      '- 영역: ' + (c.area || '(미선택)'),
-      '- 핵심 아이디어: ' + (c.idea || '(미선택)'),
-      '- 내용 요소: 지식·이해(' + (c.knowledge || '-') + ') / 과정·기능(' + (c.skill || '-') + ') / 가치·태도(' + (c.value || '-') + ')',
-      '- 성취기준: ' + (c.standard || '(미선택)'),
-    ].join('\n');
-    return promptHead() + '아래 수업 정보를 바탕으로, 수업 흐름부터 학생 평가까지 지도안 초안을 한 번에 작성해 주세요.\n\n[수업 정보]\n' + info +
-      '\n\n[작성 항목] 번호와 항목명을 그대로 소제목으로 쓰고, 항목마다 내용을 구분해 주세요. 그대로 복사해 양식 칸에 붙여 넣을 수 있어야 합니다.\n\n' + sec +
-      '\n\n[일관성 조건]\n- 본질 질문 → 탐구 질문 → 학습 목표 → 활동 → 평가 요소가 서로 이어져야 함\n- 본질 질문은 성취기준·핵심 아이디어에서 추출, 탐구 질문은 본질 질문보다 구체적이고 자료로 답을 찾을 수 있어야 함\n- 성취 수준은 같은 기준에서 정확성·깊이·독립성으로 구분(매우 잘함/잘함/기초)\n- 초등학생 발달 수준에 맞고, 실제 존재하는 자료·사실만 사용하며 확실하지 않으면 “확인 필요”로 표시' + PROMPT_TAIL;
-  }
-
   function renderSide() {
     if (current === STEPS.length) {
       const total = STEPS.reduce((n, s) => n + s.req.length, 0);
@@ -576,12 +533,7 @@
     $('#sideCol').innerHTML = `
       <div class="card"><h3>이 단계 작성 현황</h3><div class="progress"><i style="width:${Math.round(done / total * 100)}%"></i></div><div class="tip">필수 항목 ${done}/${total}</div></div>
       <div class="card tip"><h3>작성 요령</h3><ul>${st.tips.map((t) => `<li>${t}</li>`).join('')}</ul>${st.examples.length ? `<h3>예시 (양식 속 예)</h3>${st.examples.map((e) => `<div class="ex">${e}</div>`).join('')}` : ''}</div>
-      <div class="card"><h3>자동 점검</h3><ul class="checklist" id="checklist">${checkHtml(checks)}</ul></div>
-      <div class="card no-print"><h3>AI 프롬프트 생성기</h3><div class="tip">지금까지 입력한 내용으로 ChatGPT·Claude·Gemini 등에 붙여 넣을 프롬프트를 만듭니다. ${current === STEPS.length - 1 ? '(마지막 단계에서는 지도안 전체 점검 요청이 만들어집니다.)' : ''}</div>
-        <div style="display:flex;gap:6px;margin-top:8px"><button class="btn small" data-act="mkPrompt">프롬프트 만들기</button><button class="btn ghost small" data-act="cpPrompt">복사</button></div>
-        <div style="margin-top:6px"><button class="btn ghost small" data-act="mkAll" title="수업 흐름·탐구 설계·수업의 실제·평가 항목을 한 번에 요청합니다">한 번에 초안 만들기 (수업 흐름~평가)</button></div>
-        <div class="prompt-box"><textarea id="promptOut" readonly placeholder="[프롬프트 만들기]를 누르세요."></textarea></div>
-        <div class="tip" style="margin-top:6px">AI가 만든 초안은 사실과 교육과정 원문을 반드시 확인한 뒤 선생님의 수업에 맞게 고쳐 쓰세요.</div></div>`;
+      <div class="card"><h3>자동 점검</h3><ul class="checklist" id="checklist">${checkHtml(checks)}</ul></div>`;
   }
   const checkHtml = (cs) => cs.map(([ok, msg]) => `<li class="${ok ? 'ok' : 'ng'}">${esc(msg)}</li>`).join('');
 
@@ -829,16 +781,11 @@
         p.source = state.design.sourceName || p.source; p.inquiryQ = state.design.inquiryQ || p.inquiryQ;
         save(); renderForm(); return toast('앞 단계 내용을 가져왔습니다.');
       }
-      case 'mkPrompt': { const st = STEPS[current]; $('#promptOut').value = promptHead() + st.prompt(state) + PROMPT_TAIL; return; }
-      case 'mkAll': { $('#promptOut').value = allInOnePrompt(); return toast('수업 흐름~평가를 한 번에 요청하는 프롬프트를 만들었습니다. 1·2단계(개요·교육과정)를 먼저 채우면 더 정확합니다.'); }
-      case 'cpPrompt': { const t = $('#promptOut').value; if (!t) return toast('먼저 [프롬프트 만들기]를 눌러 주세요.'); await copy(t); return toast('프롬프트를 복사했습니다.'); }
       case 'docx': { const blob = await buildDocx(); if (blob) { download(blob, fileBase() + '.docx'); toast('Word 파일을 내려받았습니다.'); } return; }
       case 'print': { if (!viewBlank && current !== STEPS.length) go(STEPS.length); setTimeout(() => window.print(), 150); return; }
       case 'copyText': await copy(toPlainText(state)); return toast('지도안 전체 텍스트를 복사했습니다.');
     }
   });
-  const promptHead = () => '당신은 초등학교 수업 설계를 돕는 교육과정 전문가입니다. 세종형 「질문·탐구·성찰」 ' + TYPES[state.type].name + ' 수업 지도안 작성을 돕고 있습니다.\n\n';
-  const PROMPT_TAIL = '\n\n[출력 지침] 한국어, 교사 문서체(“~함.”, “~하도록 안내함.”)로 간결하게 작성하고, 항목별로 구분해 주세요.';
 
   $('#typeSel').addEventListener('change', (ev) => { state.type = ev.target.value; save(); if (viewBlank) { STEPS = stepsFor(); syncHeader(); renderSteps(); renderForm(); return; } go(0); toast('지도안 유형: ' + TYPES[state.type].name + ' (입력한 내용은 유지됩니다)'); });
   $('#btnBlank').addEventListener('click', () => { viewBlank = true; renderSteps(); renderForm(); window.scrollTo({ top: 0 }); });

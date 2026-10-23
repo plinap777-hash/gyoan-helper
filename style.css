@@ -120,8 +120,6 @@ label.std b{color:var(--primary);font-weight:600}
 .checklist li.ng{color:var(--warn)}
 .progress{height:6px;border-radius:99px;background:var(--hairline);overflow:hidden;margin:8px 0 6px}
 .progress>i{display:block;height:100%;background:var(--primary);transition:width .25s}
-.prompt-box{margin-top:10px}
-.prompt-box textarea{min-height:150px;font-size:13px;background:var(--pearl)}
 
 /* 하단 */
 .foot{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;padding:24px 24px 48px;color:var(--ink-48);font-size:12px;letter-spacing:-.12px;max-width:1280px;margin:0 auto;border-top:1px solid var(--hairline)}
