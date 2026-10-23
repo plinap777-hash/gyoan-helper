@@ -63,6 +63,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const st = merge(emptyState(), JSON.parse(raw));
+      if (!TYPES[st.type]) st.type = 'read';
       if (st.ai && st.ai.refEtc === OLD_REF) st.ai.refEtc = DEFAULT_REF;
       return st;
     } catch (e) { return null; }
@@ -92,12 +93,9 @@
   const TYPES = {
     read: { name: '교과 탐구 독서', sub: '초등 교과 탐구 독서 수업' },
     ai: { name: '교과탐구 인공지능활용', sub: '초등 교과탐구 인공지능활용 수업' },
-    extra: { name: '비교과 질문중심', sub: '초등 비교과 질문중심 수업' },
   };
   const L = () => (state.type === 'ai'
     ? { subject: '교과', h3: '3 질문중심 인공지능 활용 수업의 흐름', h4: '4 질문중심 인공지능 활용수업 설계하기', before: '수업 전 학생 생각', after: '수업 후 바뀐 학생 생각', strat: '', tip: '', hp: '5 수업의 실제', he: '6 학생 평가', levels: ['매우 잘함', '잘함', '기초'] }
-    : state.type === 'extra'
-    ? { subject: '교과', h3: '2 질문중심 수업의 흐름', h4: '3 질문중심 수업 설계하기', before: '수업 전 학생 생각', after: '수업 후 바뀐 학생 생각', strat: '', tip: '', hp: '4 수업의 실제', he: '5 학생 평가', levels: ['매우 잘함', '잘함', '기초'] }
     : { subject: '교과', h3: '3 교과 탐구 독서 수업 흐름', h4: '4 교과 탐구 독서 설계하기', before: '읽기 전 학생 생각', after: '탐구 후 바뀐 학생 생각', hp: '5 수업의 실제', he: '6 학생 평가', tip: '교과 탐구 독서의 포인트!', strat: '[독서전략]', levels: ['매우 잘함', '잘함', '기초'] });
   const BASE_STEPS = [
     {
@@ -256,54 +254,6 @@
     const t = state.type;
     let st = BASE_STEPS.map((x) => Object.assign({}, x));
     const strip = (x, fn) => { x.fields = fn(x.fields); };
-    if (t === 'extra') {
-      st = st.filter((x) => x.id !== 'curriculum');
-      st.forEach((x) => {
-        if (x.id === 'overview') {
-          strip(x, (f) => f.filter((q) => q.p !== 'overview.materials'));
-          const c = x.check; x.check = (s) => c(s).filter((r) => !/자료 형태/.test(r[1]));
-        }
-        if (x.id === 'flow') {
-          x.title = '질문중심 수업 흐름';
-          x.lead = '단원 전체를 관통하는 본질적 이해와 본질 질문을 정하고, 차시별 수업 흐름을 적습니다.';
-          x.tips = ['<b>본질적 이해</b>는 “(핵심개념)은 ~하는 데 쓰인다.” 같은 서술문, <b>본질 질문</b>은 “(핵심개념)은 우리 생활 속 문제를 해결하는 데 어떻게 활용될까?” 같은 열린 질문입니다.'];
-          const c = x.check; x.check = (s) => c(s).filter((r) => !/탐구 자료가 투입/.test(r[1]));
-        }
-        if (x.id === 'design') {
-          x.title = '질문중심 수업 설계';
-          strip(x, (f) => f.filter((q) => q.p !== 'design.why').map((q) => (q.p === 'design.before' ? Object.assign({}, q, { label: '수업 전 학생 생각' }) : q.p === 'design.after' ? Object.assign({}, q, { label: '수업 후 바뀐 학생 생각' }) : q)));
-          x.req = x.req.filter((r) => r !== 'design.why');
-          const c = x.check; x.check = (s) => c(s).filter((r) => !/탐구 독서여야/.test(r[1]));
-          x.tips = ['<b>탐구 질문</b>은 “~문제를 어떻게 해결할 수 있을까?” 형식이 좋습니다.', '자료 선정 이유는 “~는 ~ 자료임.”, 활용 방법은 “~도록 안내함.”으로 씁니다.', '<b>수업 전 ↔ 수업 후 생각</b>이 짝을 이루도록 쓰고, 새로운 질문은 “~을까?”로 끝냅니다.'];
-        }
-        if (x.id === 'practice') {
-          x.lead = '공개수업 차시의 도입-전개-정리를 구성합니다. 전개는 [활동1]~[활동3]을 “~하기” 항목으로 적고, 활동3은 “내 말로 학습 종합하기”를 기본으로 합니다.';
-          x.tips = ['도입에는 “질문을 생성하기 위한 자료 제시”처럼 질문이 생겨나게 하는 장치를 넣습니다.', '정리에는 “오늘 발견한 ( ) 정리하기”와 새로운 질문 던지기(“~까?”)를 넣습니다.'];
-          x.check = (s) => [
-            [filled(s.practice.unit) && filled(s.practice.session), '단원·차시를 입력했나요?'],
-            [/할 수 있다\.?\s*$/.test(s.practice.goal.trim()), '학습 목표가 “~할 수 있다.”로 끝나나요?'],
-            [filled(s.practice.source), '탐구 자료를 적었나요?'],
-            [filled(s.practice.intro), '도입을 적었나요?'],
-            [/\?\s*$/.test(s.practice.inquiryQ.trim()), '탐구 질문이 물음표(?)로 끝나나요?'],
-            [s.practice.activities.filter((a) => filled(a.title)).length >= 2, '활동을 2개 이상 구성했나요?'],
-            [/\?/.test(s.practice.outro), '정리에 새로운 질문 던지기가 들어 있나요?'],
-          ];
-        }
-        if (x.id === 'evalu') { strip(x, (f) => f.filter((q) => q.p !== 'evalu.method')); }
-      });
-      st = st.filter((x) => x.id !== 'appendix');
-      st.push({
-        id: 'appendix', title: '참고자료·내보내기', req: [],
-        lead: '지도안 끝에 붙는 [참고] 참고자료입니다. 사용한 도서와 그 외 참고 문헌을 적고 Word로 내려받습니다.',
-        fields: [
-          { p: 'ai.refBook', label: '참고 — 도서분류주제 (예: 생태적 가치)', type: 'textarea', rows: 3, ph: '지은이(연도).『책제목』. 출판사.\n예) 황근기(2009).『꼬물꼬물 갯벌 생물 이야기』. 꿈소담이.', hint: '줄바꿈으로 항목 구분' },
-          { p: 'ai.refEtc', label: '참고 — 그 외', type: 'textarea', rows: 3, hint: '양식 기본 문구가 들어 있습니다. 필요에 맞게 고쳐 쓰세요.' },
-          { type: 'exportPanel' },
-        ],
-        tips: ['도서는 “지은이(연도).『책제목』. 출판사.” 형식으로 적습니다.', '내려받은 .docx는 한글(HWP)에서 열어 양식에 맞게 다듬을 수 있습니다.'],
-        examples: [], check: (s) => [[filled(s.ai.refBook) || filled(s.ai.refEtc), '참고자료를 적었나요?']],
-      });
-    }
     if (t === 'ai') {
       st.forEach((x) => {
         if (x.id === 'overview') {
@@ -404,7 +354,7 @@
     const unitHint = groups.length ? (AREA_SUBJ.includes(o.subject) ? '목록은 교육과정 영역입니다. 영역을 고른 뒤 교과서 단원명으로 고쳐 쓰세요.' : '목록은 교육과정 성취기준 묶음(단원·주제)입니다. 고르면 단원명이 채워지고, 고쳐 쓸 수 있어요.') : '학년-학기와 교과를 고르면 목록이 나타납니다.';
     return `<div class="row2">
       <div class="field"><label>학년-학기</label><select data-sel="grade">${opt('', '선택하세요', !o.grade)}${GRADES.map((g) => opt(g, g, o.grade === g)).join('')}${o.grade && !GRADES.includes(o.grade) ? opt(o.grade, o.grade, true) : ''}</select></div>
-      <div class="field"><label>${state.type === 'extra' ? '교과(관련 교과)' : '교과'}</label><select data-sel="subject" ${band ? '' : 'disabled'}>${opt('', band ? '선택하세요' : '학년-학기를 먼저 고르세요', !o.subject && !isEtc)}${subs.map((x) => opt(x, x, !isEtc && o.subject === x)).join('')}${opt('__etc', '기타(직접 입력)', isEtc)}</select>
+      <div class="field"><label>교과</label><select data-sel="subject" ${band ? '' : 'disabled'}>${opt('', band ? '선택하세요' : '학년-학기를 먼저 고르세요', !o.subject && !isEtc)}${subs.map((x) => opt(x, x, !isEtc && o.subject === x)).join('')}${opt('__etc', '기타(직접 입력)', isEtc)}</select>
         ${isEtc ? `<input type="text" data-p="overview.subject" value="${esc(o.subject)}" placeholder="예: 보건, 창의적 체험활동" style="margin-top:6px">` : ''}</div>
     </div>
     <div class="field"><label>단원<span class="hint">${esc(unitHint)}</span></label>
@@ -457,25 +407,25 @@
       <div class="lesson-row">
         <input type="text" data-lp="${i}.no" value="${esc(l.no)}" placeholder="차시" aria-label="차시">
         <input type="text" data-lp="${i}.content" value="${esc(l.content)}" placeholder="수업 내용 (예: 비례식 알아보기)" aria-label="내용">
-        ${state.type === 'extra' ? '<span></span>' : `<label class="tg"><input type="checkbox" data-lpc="${i}" ${l.inquiry ? 'checked' : ''}> 탐구 자료 투입</label>`}
+        <label class="tg"><input type="checkbox" data-lpc="${i}" ${l.inquiry ? 'checked' : ''}> 탐구 자료 투입</label>
         <button class="btn ghost small danger" data-act="delLesson" data-i="${i}" aria-label="삭제">삭제</button>
       </div>`).join('');
-    return `<div class="field"><span class="lbl">차시별 수업 흐름<span class="hint">${state.type === 'extra' ? '단원 전체 차시와 내용을 적으세요.' : '단원 전체 차시를 적고, 탐구 자료가 투입되는 차시(공개수업)를 체크하세요.'}</span></span>${rows}<button class="btn ghost small" data-act="addLesson">+ 차시 추가</button></div>`;
+    return `<div class="field"><span class="lbl">차시별 수업 흐름<span class="hint">단원 전체 차시를 적고, 탐구 자료가 투입되는 차시(공개수업)를 체크하세요.</span></span>${rows}<button class="btn ghost small" data-act="addLesson">+ 차시 추가</button></div>`;
   }
 
   function activitiesHtml() {
     const acts = state.practice.activities.map((a, i) => `
       <div class="sub">
         <div class="sub-head"><span>[활동${i + 1}]</span><button class="btn ghost small danger" data-act="delAct" data-i="${i}">삭제</button></div>
-        <div class="field"><label>활동 제목<span class="hint">${state.type === 'read' ? '예: 책 속 풍습 탐색하기 (정보수집)' : '예: ' + (state.type === 'ai' ? '질문생성하기' : '~하기')}</span></label><input type="text" data-ap="${i}.title" value="${esc(a.title)}" placeholder="${esc(state.type === 'ai' ? AI_ACT_TITLES[i] || '~하기' : state.type === 'extra' ? (i === 2 ? '내 말로 학습 종합하기' : '~하기') : '')}"></div>
+        <div class="field"><label>활동 제목<span class="hint">${state.type === 'read' ? '예: 책 속 풍습 탐색하기 (정보수집)' : '예: ' + (state.type === 'ai' ? '질문생성하기' : '~하기')}</span></label><input type="text" data-ap="${i}.title" value="${esc(a.title)}" placeholder="${esc(state.type === 'ai' ? AI_ACT_TITLES[i] || '~하기' : '')}"></div>
         <div class="field"><label>학생 활동<span class="hint">줄바꿈으로 항목 구분</span></label><textarea data-ap="${i}.points" rows="3">${esc(a.points)}</textarea></div>
         ${state.type === 'read' ? `<div class="row2">
-          <div class="field"><label>${state.type === 'extra' ? '수업전략 이름' : '독서 전략 이름'} (선택)</label><input type="text" data-ap="${i}.strategyName" value="${esc(a.strategyName)}" placeholder="예: 그래픽 조직자"></div>
-          <div class="field"><label>${state.type === 'extra' ? '수업전략 설명' : '독서 전략 설명'} (선택)</label><input type="text" data-ap="${i}.strategyDesc" value="${esc(a.strategyDesc)}" placeholder="한 줄 설명"></div>
+          <div class="field"><label>독서 전략 이름 (선택)</label><input type="text" data-ap="${i}.strategyName" value="${esc(a.strategyName)}" placeholder="예: 그래픽 조직자"></div>
+          <div class="field"><label>독서 전략 설명 (선택)</label><input type="text" data-ap="${i}.strategyDesc" value="${esc(a.strategyDesc)}" placeholder="한 줄 설명"></div>
         </div>
         <div class="row2">
-          <div class="field"><label>${state.type === 'extra' ? '수업자의 의도 — 제목' : '탐구 독서의 포인트 — 제목'} (선택)</label><input type="text" data-ap="${i}.tipTitle" value="${esc(a.tipTitle)}" placeholder="예: 사회학자처럼 읽기"></div>
-          <div class="field"><label>${state.type === 'extra' ? '수업자의 의도 — 내용' : '포인트 — 안내 문구'} (선택)</label><input type="text" data-ap="${i}.tipDesc" value="${esc(a.tipDesc)}" placeholder="학생에게 던질 질문"></div>
+          <div class="field"><label>탐구 독서의 포인트 — 제목 (선택)</label><input type="text" data-ap="${i}.tipTitle" value="${esc(a.tipTitle)}" placeholder="예: 사회학자처럼 읽기"></div>
+          <div class="field"><label>포인트 — 안내 문구 (선택)</label><input type="text" data-ap="${i}.tipDesc" value="${esc(a.tipDesc)}" placeholder="학생에게 던질 질문"></div>
         </div>` : ''}
       </div>`).join('');
     return `<div class="field"><span class="lbl">전개 — 활동</span>${acts}<button class="btn ghost small" data-act="addAct">+ 활동 추가</button></div>`;
@@ -565,13 +515,13 @@
     if (t === 'read') ov.push(['자료 형태', { checks: MATERIALS, sel: o.materials }]);
     if (t === 'ai') ov.push(['인공지능 도구', { checks: AI_TOOLS, sel: o.aiTools }]);
     M.push({ kv: ov });
-    if (t !== 'extra') {
+    {
       M.push({ h: '2 교육과정 분석하기' });
       M.push({ kv: [['영역', c.area], ['핵심 아이디어', c.idea], ['내용 요소', { k3: [['지식·이해', c.knowledge], ['과정·기능', c.skill], ['가치·태도', c.value]] }], ['관련 성취기준', c.standard]] });
     }
     M.push({ h: lb.h3 });
     M.push({ kv: [['본질적 이해(지향점)', f.understanding], ['본질 질문', f.essentialQ]] });
-    M.push({ lessons: f.lessons, inq: t !== 'extra' });
+    M.push({ lessons: f.lessons, inq: true });
     M.push({ h: lb.h4 });
     const dr = [['탐구 질문', d.inquiryQ]];
     if (t === 'read') dr.push(['왜 탐구 독서여야 하는가?', d.why]);
@@ -591,7 +541,6 @@
     M.push({ kv: er });
     if (t === 'read') { M.push({ h: '붙임 읽기 자료' }); M.push({ kv: [['제목', a.title], ['본문', a.text], ['원자료', a.origin]] }); }
     if (t === 'ai') { M.push({ h: '[참고] 참고자료' }); const rr = [['생성형 AI', b(s.ai.refAI)], ['그 외', b(s.ai.refEtc)]]; if (filled(s.ai.video)) rr.push(['기타 자료', s.ai.video]); M.push({ kv: rr }); }
-    if (t === 'extra') { M.push({ h: '[참고] 참고자료' }); M.push({ kv: [['도서분류주제 (예: 생태적 가치)', b(s.ai.refBook)], ['그 외', b(s.ai.refEtc)]] }); }
     return M;
   }
   const bulletRaw = (t) => lines(t).map((x) => '• ' + x.replace(/^[•\-·]\s*/, '')).join('\n');
@@ -685,7 +634,7 @@
   }
 
   /* ---------- 유틸 ---------- */
-  const blankState = () => { const b = emptyState(); b.type = state.type; b.flow.lessons = ['', '', '', ''].map(() => ({ no: '', content: '', inquiry: false })); b.practice.activities = [newActivity(), newActivity(), newActivity()]; if (b.type === 'ai') b.practice.activities.forEach((x, i) => { x.title = AI_ACT_TITLES[i]; }); if (b.type === 'extra') b.practice.activities[2].title = '내 말로 학습 종합하기'; if (b.type === 'extra') b.flow.lessons.push({ no: '', content: '', inquiry: false }, { no: '', content: '', inquiry: false }); return b; };
+  const blankState = () => { const b = emptyState(); b.type = state.type; b.flow.lessons = ['', '', '', ''].map(() => ({ no: '', content: '', inquiry: false })); b.practice.activities = [newActivity(), newActivity(), newActivity()]; if (b.type === 'ai') b.practice.activities.forEach((x, i) => { x.title = AI_ACT_TITLES[i]; }); return b; };
   function withBlank(fn) { const old = state, oldB = blankMode; state = blankState(); blankMode = true; try { return fn(); } finally { state = old; blankMode = oldB; } }
   function syncHeader() { const sel = $('#typeSel'); if (sel) sel.value = state.type; const sub = $('#subTitle'); if (sub) sub.textContent = '세종형 「질문·탐구·성찰」 · ' + TYPES[state.type].sub + ' 지도안'; }
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200); }
@@ -810,7 +759,7 @@
   $('#fileLoad').addEventListener('change', (ev) => {
     const file = ev.target.files[0]; if (!file) return;
     const r = new FileReader();
-    r.onload = () => { try { state = merge(emptyState(), JSON.parse(r.result)); save(); go(0); toast('작업을 불러왔습니다.'); } catch (e) { toast('파일을 읽을 수 없습니다.'); } };
+    r.onload = () => { try { state = merge(emptyState(), JSON.parse(r.result)); if (!TYPES[state.type]) state.type = 'read'; save(); go(0); toast('작업을 불러왔습니다.'); } catch (e) { toast('파일을 읽을 수 없습니다.'); } };
     r.readAsText(file); ev.target.value = '';
   });
   $('#btnReset').addEventListener('click', () => { if (confirm('입력한 내용을 모두 지우고 새로 시작할까요?\n(필요하면 먼저 [작업 저장]을 해 두세요.)')) { state = emptyState(); save(); go(0); } });
