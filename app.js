@@ -510,6 +510,7 @@
       <div class="card">
         <h2>${current + 1}. ${esc(st.title)}</h2>
         <p class="lead">${esc(st.lead)}</p>
+        ${thinkHtml(st)}
         ${st.fields.map(fieldHtml).join('')}
         <div class="nav-btns no-print">
           <button class="btn ghost" data-act="prev" ${current === 0 ? 'disabled style="visibility:hidden"' : ''}>← 이전</button>
@@ -519,6 +520,16 @@
     renderSide();
   }
 
+
+
+  /* 단계별 '생각해 보기' (data/think.js) */
+  function thinkHtml(st) {
+    const D = window.THINK_DATA; if (!D) return '';
+    const o = D.over && D.over[state.type];
+    const t = (o && o[st.id]) || D.base[st.id];
+    if (!t) return '';
+    return `<details class="think no-print" open><summary>생각해 보기 — 이 단계, 이렇게 생각해 봅시다</summary><div class="think-body"><p>${esc(t.m)}</p><ul class="qs">${t.q.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>${t.t ? `<p class="tp">💡 ${esc(t.t)}</p>` : ''}</div></details>`;
+  }
 
   function renderSide() {
     if (current === STEPS.length) {
@@ -787,6 +798,12 @@
     }
   });
 
+  (function introInit() {
+    const d = $('#intro'); if (!d) return;
+    let seen = false; try { seen = localStorage.getItem('gyoan-intro-seen') === '1'; } catch (e) {}
+    d.open = !seen;
+    d.addEventListener('toggle', () => { if (!d.open) { try { localStorage.setItem('gyoan-intro-seen', '1'); } catch (e) {} } });
+  })();
   $('#typeSel').addEventListener('change', (ev) => { state.type = ev.target.value; save(); if (viewBlank) { STEPS = stepsFor(); syncHeader(); renderSteps(); renderForm(); return; } go(0); toast('지도안 유형: ' + TYPES[state.type].name + ' (입력한 내용은 유지됩니다)'); });
   $('#btnBlank').addEventListener('click', () => { viewBlank = true; renderSteps(); renderForm(); window.scrollTo({ top: 0 }); });
   $('#btnSave').addEventListener('click', () => { download(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }), fileBase() + '.json'); toast('작업 파일을 저장했습니다.'); });
