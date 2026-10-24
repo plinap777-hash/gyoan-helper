@@ -1,4 +1,4 @@
-/* 질문중심 수업지도안 & AI 프롬프트 생성기 — 교과 탐구 독서 · 비교과 질문중심 (v0.3)
+/* 질문중심 수업지도안 & AI 프롬프트 생성기 — 교과 탐구 독서 · 질문중심 수업 (v0.3)
    순수 HTML/JS. 서버 없이 GitHub Pages에서 동작합니다. */
 (function () {
   'use strict';
@@ -89,7 +89,7 @@
   /* ---------- 단계 정의 ---------- */
   const TYPES = {
     read: { name: '교과 탐구 독서', sub: '초등 교과 탐구 독서 수업' },
-    extra: { name: '비교과 질문중심', sub: '초등 비교과 질문중심 수업' },
+    extra: { name: '질문중심 수업', sub: '초등 질문중심 수업' },
   };
   const L = () => (state.type === 'ai'
     ? { subject: '교과', h3: '3 질문중심 인공지능 활용 수업의 흐름', h4: '4 질문중심 인공지능 활용수업 설계하기', before: '수업 전 학생 생각', after: '수업 후 바뀐 학생 생각', strat: '', tip: '', hp: '5 수업의 실제', he: '6 학생 평가', levels: ['매우 잘함', '잘함', '기초'] }
@@ -307,7 +307,7 @@
         ],
         tips: ['도서는 “지은이(연도).『책제목』. 출판사.” 형식으로 적습니다.', '내려받은 .docx는 한글(HWP)에서 열어 양식에 맞게 다듬을 수 있습니다.'],
         examples: [], check: (s) => [[filled(s.ai.refBook) || filled(s.ai.refEtc), '참고자료를 적었나요?']],
-        prompt: (s) => `다음 비교과 질문중심 수업 지도안을 읽고, ① 본질 질문-탐구 질문-학습 목표-평가 요소의 일관성, ② 탐구 질문의 적절성, ③ 활동 흐름(질문 생성-탐구-내 말로 종합), ④ 성찰(수업 전/후 생각·새로운 질문)을 점검해 개선점을 제안해 주세요.\n\n${toPlainText(s)}`,
+        prompt: (s) => `다음 질문중심 수업 지도안을 읽고, ① 본질 질문-탐구 질문-학습 목표-평가 요소의 일관성, ② 탐구 질문의 적절성, ③ 활동 흐름(질문 생성-탐구-내 말로 종합), ④ 성찰(수업 전/후 생각·새로운 질문)을 점검해 개선점을 제안해 주세요.\n\n${toPlainText(s)}`,
       });
     }
     if (t === 'ai') {
@@ -629,7 +629,7 @@
 
   function previewHtml() {
     const o = state.overview;
-    const head = `<div class="doc-title">${filled(o.topic) ? esc(o.topic) : (blankMode ? esc(TYPES[state.type].name) + ' 수업 지도안' : '(수업 주제)')}</div><div class="center" style="margin-bottom:10px">${esc(TYPES[state.type].sub)} 지도안</div>`;
+    const head = `<div class="doc-title">${filled(o.topic) ? esc(o.topic) : (blankMode ? esc(TYPES[state.type].name.replace(/ 수업$/, '')) + ' 수업 지도안' : '(수업 주제)')}</div><div class="center" style="margin-bottom:10px">${esc(TYPES[state.type].sub)} 지도안</div>`;
     return head + docModel().map((m) => {
       if (m.h) return `<h3>${esc(m.h)}</h3>`;
       if (m.kv) return `<table>${m.kv.map(([k, val]) => `<tr><th>${esc(k)}</th><td>${valHtml(val)}</td></tr>`).join('')}</table>`;
@@ -817,7 +817,7 @@
 ${ruleLines()}`;
 
   function masterPrompt() {
-    const it = state.interview, T = TYPES[state.type].name;
+    const it = state.interview, T = TYPES[state.type].name.replace(/ 수업$/, '');
     const ans = (v) => (filled(v) ? v.trim() : '(아직 없음 — 필요하면 물어봐 주세요)');
     return `당신은 초등학교 수업 설계를 돕는 교육과정 전문가입니다. 세종형 「질문·탐구·성찰」 ${T} 수업 지도안(동료장학 공개수업용)을 함께 만듭니다.
 
@@ -847,7 +847,7 @@ ${jsonBlock()}`;
   function fixPrompt() {
     const bad = allChecks().flatMap((g) => g.items.filter((r) => !r[0]).map((r) => `- [${g.title}] ${r[1]}`));
     const unsure = fieldSpecs().filter((f) => /확인 필요/.test(JSON.stringify(getp(f.p)))).map((f) => `- ${f.label}(${f.p})에 “[확인 필요]”가 남아 있음`);
-    return `당신은 초등학교 수업 설계를 돕는 교육과정 전문가입니다. 아래는 세종형 「질문·탐구·성찰」 ${TYPES[state.type].name} 수업 지도안입니다.
+    return `당신은 초등학교 수업 설계를 돕는 교육과정 전문가입니다. 아래는 세종형 「질문·탐구·성찰」 ${TYPES[state.type].name.replace(/ 수업$/, '')} 수업 지도안입니다.
 
 [고칠 곳 — 도우미 자동 점검 결과]
 ${bad.length ? bad.join('\n') : '- 자동 점검은 모두 통과했습니다.'}
@@ -1033,7 +1033,7 @@ ${jsonBlock()}`;
     const s = state, o = s.overview, pg = s.pg;
     const acts = s.practice.activities.map((a) => a.title).filter(filled);
     const rows = [
-      ['지도안 유형', TYPES[s.type].name + ' 수업'],
+      ['지도안 유형', TYPES[s.type].name.replace(/ 수업$/, '') + ' 수업'],
       ['학년-학기', o.grade], [s.type === 'extra' ? '관련 교과' : '교과', o.subject], ['단원', o.unit], ['수업 주제', o.topic], ['운영 차시', o.sessions],
       ['관련 성취기준', s.type === 'read' ? s.curriculum.standard : ''],
       ['본질 질문', s.flow.essentialQ], ['탐구 질문', s.design.inquiryQ || s.practice.inquiryQ],
@@ -1047,7 +1047,7 @@ ${jsonBlock()}`;
     const c = pgCtx(), pg = state.pg;
     const role = c.isRead
       ? '당신은 초등학교 교과 탐구 독서 수업을 설계하는 교육과정·독서교육 전문가입니다. 세종형 「질문·탐구·성찰」 교과 탐구 독서 수업을 돕고 있습니다.'
-      : '당신은 초등학교 비교과 질문중심 수업을 설계하는 교육과정 전문가입니다. 세종형 「질문·탐구·성찰」 질문중심 수업(학생이 질문을 만들고, 탐구하고, 성찰하는 수업)을 돕고 있습니다.';
+      : '당신은 초등학교 질문중심 수업을 설계하는 교육과정 전문가입니다. 세종형 「질문·탐구·성찰」 질문중심 수업(학생이 질문을 만들고, 탐구하고, 성찰하는 수업)을 돕고 있습니다.';
     const parts = [`[역할]\n${role}`];
     parts.push(`[수업 정보]\n${c.rows.length ? c.rows.map((r) => `- ${r[0]}: ${r[1]}`).join('\n') : '- (아직 입력한 정보가 없습니다. 필요한 정보를 먼저 저에게 물어봐 주세요.)'}`);
     parts.push(`[요청]\n${t.task(c)}`);
@@ -1195,7 +1195,7 @@ ${jsonBlock()}`;
       case 'copyText': await copy(toPlainText(state)); return toast('지도안 전체 텍스트를 복사했습니다.');
     }
   });
-  const promptHead = () => '당신은 초등학교 수업 설계를 돕는 교육과정 전문가입니다. 세종형 「질문·탐구·성찰」 ' + TYPES[state.type].name + ' 수업 지도안 작성을 돕고 있습니다.\n\n';
+  const promptHead = () => '당신은 초등학교 수업 설계를 돕는 교육과정 전문가입니다. 세종형 「질문·탐구·성찰」 ' + TYPES[state.type].name.replace(/ 수업$/, '') + ' 수업 지도안 작성을 돕고 있습니다.\n\n';
   const PROMPT_TAIL = '\n\n[출력 지침] 한국어, 교사 문서체(“~함.”, “~하도록 안내함.”)로 간결하게 작성하고, 항목별로 구분해 주세요.';
 
   $('#typeSel').addEventListener('change', (ev) => { state.type = ev.target.value; save(); if (viewBlank || viewAI || viewPG) { STEPS = stepsFor(); syncHeader(); renderSteps(); renderForm(); return; } go(0); toast('지도안 유형: ' + TYPES[state.type].name + ' (입력한 내용은 유지됩니다)'); });
